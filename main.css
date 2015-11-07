@@ -12,6 +12,16 @@ text {
 
 .dot {
 	stroke: #000;
-	stroke-width: 2
+	stroke-width: 2.5
+}
+
+
+/* tool tip style */
+.ttip {
+	background-color: rgba(255, 255, 255, 0.7);
+}
+
+#year_text {
+	font: 20px sans-serif;
 }
 

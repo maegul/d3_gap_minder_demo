@@ -43,6 +43,7 @@ d3.json("nations.json", function(nations){
 	// SCALES & AXES
 	// 
 
+	// x axis
 	//  Log scale for x axis and income
 	var xScale = d3.scale.log() // Just a scale, an interchange from real to plotted values
 		.domain([250, 1e5]) //numerical
@@ -57,7 +58,13 @@ d3.json("nations.json", function(nations){
 	canvas.append("g")
 		.attr("class", "x axis")
 		.attr("transform", "translate(0," + canvas_height + ")")
-		.call(xAxis);
+		.call(xAxis)
+		.append("text") // x axis label, with above transform inlcuded
+		.attr("class", "x label")
+		.attr("text-anchor", "end")
+		.attr("x", canvas_width)
+		.attr("y", -6) // 6 points toward y origin, which is at top
+		.text("Income per capita ($) (inflation adjusted)");
 	
 	// y axis
 	var yScale = d3.scale.linear()
@@ -70,7 +77,15 @@ d3.json("nations.json", function(nations){
 	
 	canvas.append("g")
 		.attr("class", "y axis")
-		.call(yAxis);
+		.call(yAxis)
+		.append("text") // y axis label
+		.attr("class", "y label")
+		.attr("text-anchor", "end")
+		.attr("y", 6)
+		.attr("x", 0)
+		.attr("dy", "0.75em")
+		.attr("transform", "rotate(-90)")
+		.text("Life expectancy (years)");
 		
 	// r axis
 	var rScale = d3.scale.sqrt()
@@ -81,6 +96,7 @@ d3.json("nations.json", function(nations){
 	var colorScale = d3.scale.category20();		
 
 
+
 	//
 	// Adding Data
 	//
@@ -88,8 +104,9 @@ d3.json("nations.json", function(nations){
 	// Add Data Canvas
 	var data_canvas = canvas.append("g")
 		.attr("class", "data_canvas");
-		
-	update();
+
+	// Initial drawing of plot		
+ 	update();
 
 
 	// Object that assigns data to everything with class '.dot'
@@ -135,23 +152,41 @@ d3.json("nations.json", function(nations){
 		update();
 	});
 
-
+	// year text
 
 	// 	Slider
 	d3.select("#year_slider").on("input", function () {
 	year_idx = parseInt(this.value) - 1950;
+//  	yr_txt.text("Year: " + this.value);
 	update();
 	});
 
 
+	// tooltip - rest in update function
+	var tooltip = d3.select("body")
+		.append("div")
+		.attr("class", "ttip")
+		.style("position", "absolute")
+		.style("visibility", "hidden");
+		
 
 	// update the plot, includes enter, exit, and transition
 	function update() {
 		var dot = data_canvas.selectAll(".dot")
 		.data(filtered_nations, function(d){return d.name});
+		
+		var yr_txt = d3.select("#year_text")
+		yr_txt.text("Year: " + (year_idx+1950))
 
 		dot.enter().append("circle").attr("class","dot")
-			.style("fill", function(d) { return colorScale(d.region); });
+			.style("fill", function(d) { return colorScale(d.region); })
+			.on("mouseover", function(d){
+				return tooltip.style("visibility", "visible").text(d.name);})
+			.on("mousemove", function() {
+				return tooltip.style("top", (d3.event.pageY-10)+"px")
+						.style("left", (d3.event.pageX+10)+"px");})
+			.on("mouseout", function(){
+				return tooltip.style("visibility", "hidden");});
 			
 		dot.exit().remove();
 		
@@ -162,6 +197,10 @@ d3.json("nations.json", function(nations){
 
 		dot.exit().remove();
 	}
+	
+	
+		
+	
 
 
 
